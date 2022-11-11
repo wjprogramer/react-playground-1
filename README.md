@@ -2,6 +2,15 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Notes
+
+https://redux-toolkit.js.org/
+
+```
+create-react-app react-playground-1 --template typescript
+rimraf
+```
+
 ## Available Scripts
 
 In the project directory, you can run:
