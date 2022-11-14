@@ -1,20 +1,39 @@
 import { Provider } from 'react-redux'
-import { configureStore } from '@reduxjs/toolkit'
-import sampleReducer from './sampleReducer';
+import { isError, isLoading } from './sampleReducer';
 import { useSelector, useDispatch } from 'react-redux'
-import { decrement, increment, applyDelta } from './sampleReducer'
+import { SampleDispatch, store, decrement, increment, applyDelta, SampleState, PayloadType } from './sampleReducer'
+import { useState } from 'react';
+import { isPending } from '@reduxjs/toolkit';
 
-const store = configureStore({
-  reducer: {
-    sample: sampleReducer,
-  },
-})
+const buildContent = (payload: PayloadType) => {
+    if (payload == undefined || isLoading(payload)) {
+      return <>Loading</>
+    }
 
-type RootState = ReturnType<typeof store.getState>
+    if (isError(payload)) {
+      return <>
+        Error {payload.code}: {payload.message}
+      </>
+    }
+
+    return <>
+      Value: {payload.value}
+    </>
+}
 
 const Sample = () => {
-  const count = useSelector((state: RootState) => state.sample.value)
-  const dispatch = useDispatch()
+  const count = useSelector((state: SampleState) => state.sample.value)
+  const dispatch = useDispatch<SampleDispatch>()
+
+  const [ actionPayload, setActionPayload ] = useState<PayloadType>();
+  const [ actionType, setActionType ] = useState<string>('');
+
+  const doDecrement = async () => {
+    const res = await dispatch(applyDelta({ value: -1 }));
+
+    setActionPayload(res.payload);
+    setActionType(res.type);
+  }
 
   return (
     <div>
@@ -28,11 +47,15 @@ const Sample = () => {
         <span>{count}</span>
         <button
           aria-label="Decrement value"
-          // onClick={() => dispatch(decrement())}
-          onClick={() => dispatch(applyDelta({ value: -1 }))}
+          onClick={() => doDecrement()}
         >
           Decrement
         </button>
+        <div>
+          { buildContent(actionPayload) }
+        </div>
+        <div>actionType: {actionType}</div>
+        <div>actionPayload:{JSON.stringify(actionPayload)}</div>
       </div>
     </div>
   )
